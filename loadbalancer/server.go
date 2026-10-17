@@ -1,16 +1,33 @@
-package main
+package loadbalancer
 
 import (
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
+	"sync"
 	"time"
 )
 
-func (pool *ServerPool) healthCheckAllServers() {
-	for _, server := range pool.servers {
-		go server.healthCheckOneServer()
-	}
+type Server struct {
+	url          *url.URL
+	alive        bool
+	mux          sync.RWMutex
+	reverseProxy *httputil.ReverseProxy
+}
+
+func (server *Server) isAlive() bool {
+	server.mux.RLock()
+	defer server.mux.RUnlock()
+
+	return server.alive
+}
+
+func (server *Server) setAlive(alive bool) {
+	server.mux.Lock()
+	defer server.mux.Unlock()
+
+	server.alive = alive
 }
 
 func (server *Server) healthCheckOneServer() {
@@ -40,5 +57,3 @@ func isServerAlive(url *url.URL) bool {
 
 	return resp.StatusCode == http.StatusOK
 }
-
-func load
