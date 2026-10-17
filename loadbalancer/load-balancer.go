@@ -1,5 +1,11 @@
 package loadbalancer
 
+import (
+	"log"
+	"net"
+	"net/http"
+)
+
 const (
 	LOAD_BALANCER_ADDRESS = "localhost:8000"
 )
@@ -22,7 +28,26 @@ func (lb *LoadBalancer) HealthCheck() {
 	lb.pool.healthCheckAllServers()
 }
 
-// TODO: implement the logic to receive request
 func (lb *LoadBalancer) ListenAndServe(address string) error {
-	return nil
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sourceIP, _, err := net.SplitHostPort(r.RemoteAddr)
+		if err != nil {
+			log.Printf("Cannot extract client IP from %q: %v", r.RemoteAddr, err)
+			http.Error(
+				w,
+				"Cannot determine client IP",
+				http.StatusInternalServerError,
+			)
+			return
+		}
+
+		lb.processRequest(w, r, sourceIP)
+	})
+
+	log.Printf("Load balancer listening on %s", address)
+	return http.ListenAndServe(address, handler)
+}
+
+func (lb *LoadBalancer) processRequest(w http.ResponseWriter, r *http.Request, sourceIP string) {
+
 }
