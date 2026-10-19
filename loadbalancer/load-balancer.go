@@ -50,10 +50,15 @@ func (lb *LoadBalancer) ListenAndServe(address string) error {
 }
 
 func (lb *LoadBalancer) processRequest(w http.ResponseWriter, r *http.Request, sourceIP string) {
-	hashIP := hashIP(sourceIP)
-	server := lb.pool.getServer(hashIP)
-	if server != nil {
-
+	hashedIP := hashIP(sourceIP)
+	server := lb.pool.getServer(hashedIP)
+	if server == nil {
+		http.Error(
+			w,
+			"No available servers",
+			http.StatusServiceUnavailable,
+		)
+		return
 	}
 
 	sendRequestToServer(w, r, server)
@@ -66,5 +71,5 @@ func hashIP(ip string) uint32 {
 }
 
 func sendRequestToServer(w http.ResponseWriter, r *http.Request, server *Server) {
-
+	server.reverseProxy.ServeHTTP(w, r)
 }

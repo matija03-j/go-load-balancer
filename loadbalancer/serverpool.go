@@ -15,5 +15,18 @@ func (pool *ServerPool) healthCheckAllServers() {
 }
 
 func (pool *ServerPool) getServer(hash uint32) *Server {
+	numServers := len(pool.servers)
+	if numServers == 0 {
+		return nil
+	}
+	serverIndex := int(hash % uint32(numServers))
+
+	for offset := 0; offset < numServers; offset++ {
+		currentIndex := (serverIndex + offset) % numServers
+		server := pool.servers[currentIndex]
+		if server.isAlive() {
+			return server
+		}
+	}
 	return nil
 }
