@@ -49,5 +49,19 @@ func (lb *LoadBalancer) ListenAndServe(address string) error {
 }
 
 func (lb *LoadBalancer) processRequest(w http.ResponseWriter, r *http.Request, sourceIP string) {
+	hashIP := hashIP(sourceIP)
+	server := lb.pool.getServer(hashIP)
+	if server != nil {
+
+	}
+
+	sendRequestToServer(w, r, server)
+}
+
+func hashIP(ip string) uint32 {
+	return 0
+}
+
+func sendRequestToServer(w http.ResponseWriter, r *http.Request, server *Server) {
 
 }

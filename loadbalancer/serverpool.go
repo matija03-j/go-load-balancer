@@ -13,3 +13,7 @@ func (pool *ServerPool) healthCheckAllServers() {
 		go server.healthCheckOneServer()
 	}
 }
+
+func (pool *ServerPool) getServer(hash uint32) *Server {
+	return nil
+}
