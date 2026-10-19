@@ -1,6 +1,7 @@
 package loadbalancer
 
 import (
+	"hash/fnv"
 	"log"
 	"net"
 	"net/http"
@@ -59,7 +60,9 @@ func (lb *LoadBalancer) processRequest(w http.ResponseWriter, r *http.Request, s
 }
 
 func hashIP(ip string) uint32 {
-	return 0
+	hasher := fnv.New32a()
+	_, _ = hasher.Write([]byte(ip))
+	return hasher.Sum32()
 }
 
 func sendRequestToServer(w http.ResponseWriter, r *http.Request, server *Server) {
