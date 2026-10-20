@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 )
 
 const (
@@ -15,9 +16,11 @@ type LoadBalancer struct {
 	pool *ServerPool
 }
 
-// TODO: get list of server's IPs, make them and put in the list
-func NewLB() *LoadBalancer {
-	return &LoadBalancer{}
+func NewLB(servers []*url.URL) *LoadBalancer {
+	pool := newPool(servers)
+	return &LoadBalancer{
+		pool: pool,
+	}
 }
 
 func (lb *LoadBalancer) Run() error {
@@ -72,4 +75,5 @@ func hashIP(ip string) uint32 {
 
 func sendRequestToServer(w http.ResponseWriter, r *http.Request, server *Server) {
 	server.reverseProxy.ServeHTTP(w, r)
+
 }

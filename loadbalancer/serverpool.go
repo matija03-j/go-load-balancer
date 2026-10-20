@@ -1,7 +1,22 @@
 package loadbalancer
 
+import "net/url"
+
 type ServerPool struct {
 	servers []*Server
+}
+
+func newPool(servers []*url.URL) *ServerPool {
+	pool := &ServerPool{
+		servers: []*Server{},
+	}
+
+	for _, server := range servers {
+		newServer := newServer(server)
+		pool.addServer(newServer)
+	}
+
+	return pool
 }
 
 func (pool *ServerPool) addServer(server *Server) {
